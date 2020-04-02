@@ -29,3 +29,5 @@ Used Labels for Events:
 |	action |         |	String | See jsq.datastructes.Const for Strings
 
 
+# Referenzen
+Diese Bibliothek wird verwendet vom [Hibiscus Depot Viewer](https://github.com/littleyoda/hibiscus.depotviewer).

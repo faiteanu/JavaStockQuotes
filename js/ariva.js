@@ -1,25 +1,32 @@
+// Script for Hibiscus Depot Viewer
+// Updated 02.04.2020 by @faiteanu
+// Original version by @mikekorb
+
 try {
 	load("nashorn:mozilla_compat.js");
 	var prejava8 = false;
 	var ArrayList = Java.type('java.util.ArrayList');
 
-} catch(e) {
+} catch (e) {
 	// Rhino
 	var prejava8 = true;
 	var ArrayList = java.util.ArrayList;
 };
-var fetcher; 
-var wc;
+
+importPackage(Packages.de.willuhn.logging);
+
+var fetcher;
+var webClient;
 
 
-var y1,m1,d1,y2,m2,d2;
+var y1, m1, d1, y2, m2, d2;
 
 function getAPIVersion() {
 	return "1";
 };
 
 function getVersion() {
-	return "2016-11-05";
+	return "2020-04-02";
 };
 
 function getName() {
@@ -38,38 +45,15 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	y2 = stopyear; m2 = stopmon; d2 = stopday;
 
 	webClient = fetcher.getWebClient(false);
-	page = webClient.getPage("http://www.ariva.de/");
+	page = webClient.getPage("https://www.ariva.de/search/search.m?searchname=" + search);
 
-	input = Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@id='livesearch']");
-	input.setValueAttribute(search);
+	links = page.getAnchorByText("Kurse");
+	page = links.click();
 
-	y = Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[contains(@class, 'go ') and @type='submit']");
-	page = y.click();
+	links = page.getAnchorByText("Historische Kurse");
+	page = links.click();
 
 	extractBasisdata(page);
-
-	// Find "Kurs"-Link
-	a = null;
-	for (i = 0; i < page.getAnchors().size(); i++) {
-		aa = page.getAnchors().get(i);
-		if (aa.getAttribute("href").contains("/kurs") || aa.getAttribute("href").contains("/quote/simple.m")) {
-			a = aa;
-			break;
-		}
-	}
-	page = a.click();
-
-
-	// Link "Hist.Kurse"
-	a = null;
-	for (i = 0; i < page.getAnchors().size(); i++) {
-		aa = page.getAnchors().get(i);
-		if (aa.getAttribute("href").contains("historische_kurse") || aa.getAttribute("href").contains("/quote/historic.m")) {
-			a = aa;
-			break;
-		}
-	}
-	page = a.click();
 
 	page.getElementById("clean_split").setChecked(false);
 	page.getElementById("clean_payout").setChecked(false);
@@ -112,15 +96,15 @@ function process(config) {
 		for (j = 0; j < cfg.getSelected().size(); j++) {
 			var o = cfg.getSelected().get(j);
 			if (o.getObj().toString().equals("waehrung")) {
-				defaultcur = o.toString(); 
+				defaultcur = o.toString();
 			}
 			if (o.getObj().toString().equals("handelsplatz")) {
-				handelsplatz = o.toString(); 
+				handelsplatz = o.toString();
 			}
 			var found = 0;
-			
+
 			select = getSelect(o.getObj(), page);
-			optionslist = select.getOptions(); 
+			optionslist = select.getOptions();
 			for (var k = 0; k < optionslist.size(); k++) {
 				var option = optionslist.get(k);
 				if (option.getText().trim().equals(o.toString())) {
@@ -138,14 +122,29 @@ function process(config) {
 	page.getElementById("minTime").setText(d1 + "." + m1 + "." + y1);
 	page.getElementById("maxTime").setText(d2 + "." + m2 + "." + y2);
 
-//	submit = Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@class='submitButton' and @value='OK']");
-//	page = submit.click();
+	//	submit = Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@class='submitButton' and @value='OK']");
+	//	page = submit.click();
 
 	submit = Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@class='submitButton' and @value='Download']");
 	text = submit.click();
 	evalCSV(text.getContent(), defaultcur);
 
-	extractEvents(page, handelsplatz);
+
+	try {
+		link = page.getAnchorByText("Historische Ereignisse");
+	} catch (e) {
+		Logger.info("Historische Ereignisse nicht gefunden");
+		return;
+	}
+
+	//Logger.info("Link:" + link.asXml());
+	try {
+		page = link.click();
+		page.getElementById("clean_split").setChecked(false);
+		extractEvents(page, handelsplatz);
+	} catch (e) {
+		Logger.error("Historische Ereignisse nicht geladen: " + e);
+	}
 
 };
 
@@ -159,20 +158,13 @@ function extractEvents(page, handelsplatz) {
 	dict["Split"] = Packages.jsq.datastructes.Const.STOCKSPLIT;
 	dict["Bezugsrecht"] = Packages.jsq.datastructes.Const.SUBSCRIPTIONRIGHTS;
 
+	//	{Datum=30.04.01, Verhältnis=2:1, Betrag=, Ereignis=Gratisaktien}
+	//	{Datum=23.02.01, Verhältnis= , Betrag=0,82 EUR, Ereignis=Dividende}
+	//	{Datum=04.01.99, Verhältnis=0,51129, Betrag=, Ereignis=Euro-Umstellung}
+	//	{Datum=02.05.96, Verhältnis=1:10, Betrag=, Ereignis=Split}
+	//	{Datum=29.07.91, Verhältnis=6:1, Betrag=20,45 EUR, Ereignis=Bezugsrecht}
+	//	{Datum=31.01.14, Verhältnis= , Betrag=3,98 EUR, Ereignis=Ausschüttung}
 
-//	{Datum=30.04.01, Verhältnis=2:1, Betrag=, Ereignis=Gratisaktien}
-//	{Datum=23.02.01, Verhältnis= , Betrag=0,82 EUR, Ereignis=Dividende}
-//	{Datum=04.01.99, Verhältnis=0,51129, Betrag=, Ereignis=Euro-Umstellung}
-//	{Datum=02.05.96, Verhältnis=1:10, Betrag=, Ereignis=Split}
-//	{Datum=29.07.91, Verhältnis=6:1, Betrag=20,45 EUR, Ereignis=Bezugsrecht}
-//	{Datum=31.01.14, Verhältnis= , Betrag=3,98 EUR, Ereignis=Ausschüttung}
-	link = Packages.jsq.tools.HtmlUnitTools.getElementByPartContent(page, "Historische Ereignisse", "a");
-	if (link ==  null) {
-		print("Hist. Ereignisse nicht gefunden");
-		return;
-	}
-	page.getElementById("clean_split").setChecked(false);
-	page = link.click();
 	tab = Packages.jsq.tools.HtmlUnitTools.getElementByPartContent(page, "Datum", "table");
 	list = Packages.jsq.tools.HtmlUnitTools.analyse(tab);
 
@@ -185,14 +177,14 @@ function extractEvents(page, handelsplatz) {
 
 		// filter date range
 		d = Packages.jsq.tools.VarTools.parseDate(hashmap.get("Datum"), "dd.MM.yy");
-		if (!fetcher.within(d)) { 
+		if (!fetcher.within(d)) {
 			continue;
 		}
 
 		var dc = new Packages.jsq.datastructes.Datacontainer();
 		// Teilweise unterscheiden sich die Termine nach Handelsplätzen
 		if (hashmap.get("Handelsplätze") != null && hashmap.get("Handelsplätze") != "") {
-			hp =  java.util.Arrays.asList(hashmap.get("Handelsplätze").split(", "))
+			hp = java.util.Arrays.asList(hashmap.get("Handelsplätze").split(", "))
 			if (!hp.contains(handelsplatz)) {
 				// Nicht unser Handelsplatz
 				continue;
@@ -203,7 +195,7 @@ function extractEvents(page, handelsplatz) {
 		action = dict[hashmap.get("Ereignis")];
 		if (typeof action === "undefined") {
 			println("Undef für " + hashmap);
-		}		
+		}
 		dc.put("action", action);
 		cur = null;
 		amount = null;
@@ -222,7 +214,7 @@ function extractEvents(page, handelsplatz) {
 
 
 
-function evalCSV(content, defaultcur)  {
+function evalCSV(content, defaultcur) {
 	var records = Packages.jsq.tools.CsvTools.getRecordsFromCsv(";", content);
 	var res = new ArrayList();
 	for (i = 0; i < records.size(); i++) {
@@ -239,15 +231,15 @@ function evalCSV(content, defaultcur)  {
 	fetcher.setHistQuotes(res);
 }
 
-function getSelect(search,  page) {
-	return page.getFirstByXPath("//select[contains(@class, '"  + search + "')]");
+function getSelect(search, page) {
+	return page.getFirstByXPath("//select[contains(@class, '" + search + "')]");
 }
 
-function getLinksForSelection(search,  page) {
+function getLinksForSelection(search, page) {
 	var ret = new ArrayList();
 	select = getSelect(search, page);
 	if (select) {
-		optionslist = select.getOptions(); 
+		optionslist = select.getOptions();
 		for (var i = 0; i < optionslist.size(); i++) {
 			var div = optionslist.get(i);
 			content = div.getText().trim();
@@ -259,10 +251,10 @@ function getLinksForSelection(search,  page) {
 
 function extractBasisdata(page) {
 	var dc = new Packages.jsq.datastructes.Datacontainer();
-	
+
 	wkn = Packages.jsq.tools.HtmlUnitTools.getElementByPartContent(page, "WKN:", "div");
 	dc.put("wkn", wkn.getTextContent().split(" ")[1]);
-	
+
 	isin = Packages.jsq.tools.HtmlUnitTools.getElementByPartContent(page, "ISIN:", "div");
 	dc.put("isin", isin.getTextContent().split(" ")[1]);
 
