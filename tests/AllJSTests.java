@@ -87,7 +87,8 @@ public class AllJSTests {
 			assertTrue(f.getAPIVersion().equals("1"));
 		}
 		
-		fetcher.prepare("DE0007236101", 2012, 5, 29, 2014, 6, 1); // Siemens
+		//fetcher.prepare("DE0007236101", 2012, 5, 29, 2014, 6, 1); // Siemens
+		fetcher.prepare("603474", 2016, 1, 1, 2020, 6, 25); 
 		while (fetcher.hasMoreConfig()) {
 			List<Config> config = fetcher.getConfigs();
 			// Set always the first option
@@ -98,7 +99,7 @@ public class AllJSTests {
 			}
 			fetcher.process(config);
 		}
-		System.out.println("	Quotes:" + fetcher.getHistQuotes());
+		//System.out.println("	Quotes:" + fetcher.getHistQuotes());
 		System.out.println("	Details:" + fetcher.getStockDetails());
 		System.out.println("	Events:" + fetcher.getHistEvents());
 		assertNotNull(fetcher.getStockDetails());

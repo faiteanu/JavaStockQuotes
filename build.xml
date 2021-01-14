@@ -14,7 +14,7 @@
 
   <!-- Default property values, if not overridden elsewhere: -->
   <property name='build' location='build' />
-  <property name='app.version' value='0.1.0'/>
+  <property name='app.version' value='0.1.1'/>
   <property name='app.name' value='JavaStockQuotes'/>
   <property name='distro-name' value='java-stock-quotes-${app.version}'/>
   <tstamp><format property='build.time' pattern='yyyy-MM-dd HH:mm:ss'/></tstamp>
@@ -67,11 +67,11 @@
      </delete>
      <mkdir dir="${build}/javadoc"/>
      <mkdir dir="${build}/dist"/>
-     <mkdir dir="${build}/templates"/>
+     <!--<mkdir dir="${build}/templates"/>-->
    </target>
   
    <target name='compile' description='Compile source files and place beside source.'>
-     <javac srcdir="src">   
+     <javac srcdir="src" debug="true" debuglevel="lines,vars,source">   
        <classpath refid='compile.classpath'/>
      </javac>
      <!-- Here's a simple way of debugging a path, fileset, or patternset, using its refid: -->
@@ -120,12 +120,21 @@
       <header><![CDATA[<h1>${app.name} ${app.version}</h1>]]></header>
     </javadoc>
   </target>
-  
-  <target name='distro-binary' description='Create zip file with executable jar, docs.' depends='jar, javadoc'>
+	
+  <target name="copy-js" description="Copy JavaScript files for GenericFetcher">
+  	<copy todir="${build}/dist/js/">
+  		<fileset dir="js/">
+  			<exclude name="finanzennet.js"/>
+  		</fileset>
+  	</copy>
+  </target>  
+	
+  <target name='distro-binary' description='Create zip file with executable jar, docs.' depends='jar, javadoc, copy-js'>
     <zip destfile='${build}/dist/${distro-name}-binary.zip' duplicate='preserve'>
       <zipfileset dir='${build}/dist/' includes='${distro-name}.jar'/>
+      <zipfileset dir='${build}/dist/js' prefix='js' />
       <zipfileset dir='${build}/javadoc' prefix='javadoc' />
-      <zipfileset dir='${build}/templates' includes='README.txt'/>
+      <!--<zipfileset dir='${build}/templates' includes='README.txt'/>-->
     </zip>
   </target>
   
@@ -137,7 +146,7 @@
   </target>
   
   <target name='all' description='Create all build artifacts.' 
-             depends='clean, compile, test, jar, javadoc, distro-binary, distro-source'>
+             depends='clean, compile, test, jar, javadoc, copy-js, distro-binary, distro-source'>
     <echo>Finished creating all build artifacts.</echo>
   </target>
   

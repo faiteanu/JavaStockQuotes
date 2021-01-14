@@ -8,6 +8,8 @@ public class Const {
 	
 	final static public String STOCKSPLIT = "Stock Split";
 	
+	final static public String STOCKREVERSESPLIT = "Stock Reverse Split";
+	
 	final static public String STOCKDIVIDEND = "Stock Dividend";
 	
 }

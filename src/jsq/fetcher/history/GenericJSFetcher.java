@@ -27,11 +27,16 @@ public class GenericJSFetcher extends BaseFetcher {
 	private Calendar start;  
 	private Calendar stop; 
 
+	/**
+	 * Create a new generic fetcher from the JavaScript file passed in {@code filename}.
+	 * @param filename
+	 * @throws Exception
+	 */
 	public GenericJSFetcher(String filename) throws Exception {
 		try {
 			File f = new File(filename);
-			ScriptEngineManager manager = new ScriptEngineManager();  
-			ScriptEngine engine = manager.getEngineByName("JavaScript");
+			ScriptEngineManager manager = new ScriptEngineManager(null);  
+			ScriptEngine engine = manager.getEngineByName("nashorn");
 			engine.put("fetcher", this);
 			engine.eval( new InputStreamReader(new FileInputStream(f),"utf-8"));
 

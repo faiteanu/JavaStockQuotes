@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="tests"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/apache-commons-csv/commons-csv-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/htmlunit-2.45.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/htmlunit-cssparser-1.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/httpclient-4.5.13.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/commons-codec-1.11.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/httpcore-4.4.13.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/htmlunit-core-js-2.45.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/dec-0.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/commons-io-2.8.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/commons-lang3-3.11.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/xercesImpl-2.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/xml-apis-1.4.01.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/xalan-2.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/httpmime-4.5.13.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/neko-htmlunit-2.45.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.45/salvation2-3.0.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
