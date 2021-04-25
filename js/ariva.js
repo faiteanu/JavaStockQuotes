@@ -24,7 +24,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2021-01-13";
+	return "2021-04-26";
 };
 
 function getName() {
@@ -95,6 +95,7 @@ function process(config) {
 	var defaultcur = "EUR";
 	var handelsplatz = "";
 	var boerse_id="";
+	var currency_id="";
 	//var secu = "";
 
 	for (i = 0; i < config.size(); i++) {
@@ -103,29 +104,47 @@ function process(config) {
 			var o = cfg.getSelected().get(j);
 			if (o.getObj().toString().equals("waehrung")) {
 				defaultcur = o.toString(); 
+				var found = 0;
+            
+				select = getSelect(o.getObj(), page);
+				optionslist = select.getOptions(); 
+				for (var k = 0; k < optionslist.size(); k++) {
+					var option = optionslist.get(k);
+					if (option.getText().trim().equals(o.toString())) {
+						print("Selecting " + option.getText());
+						currency_id = option.getValueAttribute();
+						option.setSelected(true);
+						found = 1;
+					}
+				}
+				if (found == 0) {
+					print("Warnung: Link für " + o.getObj() + " nicht gefunden!");
+				}
 			} else if (o.getObj().toString().equals("handelsplatz")) {
 				handelsplatz = o.toString(); 
-            var found = 0;
+				var found = 0;
             
-            select = getSelect(o.getObj(), page);
-            optionslist = select.getOptions(); 
-            for (var k = 0; k < optionslist.size(); k++) {
-               var option = optionslist.get(k);
-               if (option.getText().trim().equals(o.toString())) {
-                  print("Selecting " + option.getText());
-                  boerse_id= option.getValueAttribute();
-                  option.setSelected(true);
-                  found = 1;
-               }
-            }
-            if (found == 0) {
-               print("Warnung: Link für " + o.getObj() + " nicht gefunden!");
-            }
-         }
+				select = getSelect(o.getObj(), page);
+				optionslist = select.getOptions(); 
+				for (var k = 0; k < optionslist.size(); k++) {
+					var option = optionslist.get(k);
+					if (option.getText().trim().equals(o.toString())) {
+						print("Selecting " + option.getText());
+						boerse_id= option.getValueAttribute();
+						option.setSelected(true);
+						found = 1;
+					}
+				}
+				if (found == 0) {
+					print("Warnung: Link für " + o.getObj() + " nicht gefunden!");
+				}
+			}
 		}
 	}
 	if (boerse_id){
-    	var histUrl= getURL() + "/quote/historic/historic.csv?secu=" + Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@name='secu']").getValueAttribute() + "&boerse_id=" + boerse_id + "&clean_split=1&clean_payout=1&clean_bezug=1&min_time=" + d1 + "." + m1 + "." + y1 +"&max_time=" + d2 + "." + m2 + "." + y2 + "&trenner=%3B&go=Download";
+    	var histUrl= getURL() + "/quote/historic/historic.csv?secu=" + Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@name='secu']").getValueAttribute() 
+			+ "&boerse_id=" + boerse_id + "&clean_split=1&clean_payout=1&clean_bezug=1&currency=" + currency_id + "&min_time=" + d1 + "." + m1 + "." + y1 
+			+"&max_time=" + d2 + "." + m2 + "." + y2 + "&trenner=%3B&go=Download";
     	print(histUrl);
 		text = webClient.getPage(histUrl);
     	defaultcur = Packages.jsq.tools.CurrencyTools.correctCurrency(defaultcur);
@@ -217,6 +236,7 @@ function evalCSV(content, defaultcur)  {
 		dc.put("currency", defaultcur);
 		res.add(dc);
 	}
+	print(records.size() + " Kurse geladen");
 	fetcher.setHistQuotes(res);
 }
 
