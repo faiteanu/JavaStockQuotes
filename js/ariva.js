@@ -1,5 +1,5 @@
 // Script for Hibiscus Depot Viewer
-// Updated 02.04.2020 by @faiteanu
+// Updated 18.09.2022 by @faiteanu
 // Original version by @mikekorb
 
 try {
@@ -24,7 +24,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2021-04-26";
+	return "2022-09-18";
 };
 
 function getName() {
@@ -165,12 +165,9 @@ function extractEvents(page, handelsplatz) {
 	dict["Reverse Split"] = Packages.jsq.datastructes.Const.STOCKREVERSESPLIT;
 	dict["Bezugsrecht"] = Packages.jsq.datastructes.Const.SUBSCRIPTIONRIGHTS;
 
-	if(kursUrl.indexOf("secu=") > 0){
-		// fonds use a different URL from shares
-		eventUrl = getURL() + "/quote/kapitalmassnahmen.m?clean_split=0&" + kursUrl.substring(kursUrl.indexOf("secu="));		
-	}else{
-		eventUrl = url + "/historische_ereignisse?clean_split=0";			
-	}
+
+	eventUrl = url + "/dividende-split/?clean_split=0";			
+	
   	print(eventUrl);
 	page = webClient.getPage(eventUrl);
 	tab = Packages.jsq.tools.HtmlUnitTools.getElementByPartContent(page, "Datum", "table");
