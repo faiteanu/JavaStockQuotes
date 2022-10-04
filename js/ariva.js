@@ -1,5 +1,5 @@
 // Script for Hibiscus Depot Viewer
-// Updated 18.09.2022 by @faiteanu
+// Updated 05.10.2022 by @faiteanu
 // Original version by @mikekorb
 
 try {
@@ -24,7 +24,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2022-09-18";
+	return "2022-10-05";
 };
 
 function getName() {
@@ -143,7 +143,7 @@ function process(config) {
 	}
 	if (boerse_id){
     	var histUrl= getURL() + "/quote/historic/historic.csv?secu=" + Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@name='secu']").getValueAttribute() 
-			+ "&boerse_id=" + boerse_id + "&clean_split=1&clean_payout=1&clean_bezug=1&currency=" + currency_id + "&min_time=" + d1 + "." + m1 + "." + y1 
+			+ "&boerse_id=" + boerse_id + "&clean_split=0&clean_payout=0&clean_bezug=0&currency=" + currency_id + "&min_time=" + d1 + "." + m1 + "." + y1 
 			+"&max_time=" + d2 + "." + m2 + "." + y2 + "&trenner=%3B&go=Download";
     	print(histUrl);
 		text = webClient.getPage(histUrl);
@@ -162,11 +162,16 @@ function extractEvents(page, handelsplatz) {
 	dict["Dividende"] = Packages.jsq.datastructes.Const.CASHDIVIDEND;
 	dict["Ausschüttung"] = Packages.jsq.datastructes.Const.CASHDIVIDEND;
 	dict["Split"] = Packages.jsq.datastructes.Const.STOCKSPLIT;
+	dict["Allg. Korrektur"] = Packages.jsq.datastructes.Const.STOCKSPLIT;
 	dict["Reverse Split"] = Packages.jsq.datastructes.Const.STOCKREVERSESPLIT;
 	dict["Bezugsrecht"] = Packages.jsq.datastructes.Const.SUBSCRIPTIONRIGHTS;
 
-
-	eventUrl = url + "/dividende-split/?clean_split=0";			
+	if(kursUrl.indexOf("secu=") > 0){
+		// fonds use a different URL from shares
+		eventUrl = getURL() + "/quote/kapitalmassnahmen.m?clean_split=0&" + kursUrl.substring(kursUrl.indexOf("secu="));		
+	}else{
+		eventUrl = url + "/dividende-split/?clean_split=0";
+	}
 	
   	print(eventUrl);
 	page = webClient.getPage(eventUrl);
@@ -196,7 +201,12 @@ function extractEvents(page, handelsplatz) {
 			}
 		}
 		dc.put("date", d);
-		dc.put("ratio", hashmap.get("Verhältnis"));
+		var ratio = hashmap.get("Verhältnis");
+		if(ratio !== undefined && ratio.trim() !== "" && ratio.indexOf(":") < 0){
+			// convert float to ratio with colon
+			ratio = Packages.jsq.tools.VarTools.stringToBigDecimalGermanFormat(ratio).toString() + ":1";
+		}
+		dc.put("ratio", ratio);
 		action = dict[hashmap.get("Ereignis")];
 		if (typeof action === "undefined") {
 			print("Undef für " + hashmap);
