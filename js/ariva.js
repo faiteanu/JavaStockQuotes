@@ -1,6 +1,7 @@
 // Script for Hibiscus Depot Viewer
 // Updated 05.10.2022 by @faiteanu
 // Original version by @mikekorb
+// Hotfix 21.03.2023 Karl Heesch
 
 try {
 	load("nashorn:mozilla_compat.js");
@@ -16,6 +17,7 @@ var fetcher;
 var webClient;
 var url;
 var kursUrl;
+var secu;	// KH: zugefügt
 
 var y1,m1,d1,y2,m2,d2;
 
@@ -48,6 +50,8 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	
 
 	page = webClient.getPage(url + "/search/livesearch.m?searchname=" + search);
+	
+	secu = page.getContent().match(/<input type="hidden" id="liveSearchRowAG1" value="([^"]+)"/)[1];	// KH: hinzugefügt.
 
 	var link = page.getContent().match(/<a href="([^"]+)"/);
 	if (link){
@@ -142,7 +146,8 @@ function process(config) {
 		}
 	}
 	if (boerse_id){
-    	var histUrl= getURL() + "/quote/historic/historic.csv?secu=" + Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@name='secu']").getValueAttribute() 
+    	//var histUrl= getURL() + "/quote/historic/historic.csv?secu=" + Packages.jsq.tools.HtmlUnitTools.getFirstElementByXpath(page, "//input[@name='secu']").getValueAttribute() 
+    	var histUrl= getURL() + "/quote/historic/historic.csv?secu=" + secu		// KH: Zeile geändert
 			+ "&boerse_id=" + boerse_id + "&clean_split=0&clean_payout=0&clean_bezug=0&currency=" + currency_id + "&min_time=" + d1 + "." + m1 + "." + y1 
 			+"&max_time=" + d2 + "." + m2 + "." + y2 + "&trenner=%3B&go=Download";
     	print(histUrl);
