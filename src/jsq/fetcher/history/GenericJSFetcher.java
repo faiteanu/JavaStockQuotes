@@ -15,9 +15,9 @@ import javax.script.ScriptException;
 import jsq.config.Config;
 import jsq.fetch.factory.Factory;
 
-import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
-import com.gargoylesoftware.htmlunit.ThreadedRefreshHandler;
-import com.gargoylesoftware.htmlunit.WebClient;
+import org.htmlunit.SilentCssErrorHandler;
+import org.htmlunit.ThreadedRefreshHandler;
+import org.htmlunit.WebClient;
 
 public class GenericJSFetcher extends BaseFetcher {
 
@@ -102,7 +102,7 @@ public class GenericJSFetcher extends BaseFetcher {
 		webClient.setRefreshHandler(new ThreadedRefreshHandler());
 		webClient.getOptions().setJavaScriptEnabled(useJavaScript);
 		webClient.getOptions().setThrowExceptionOnScriptError(false);
-		java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF);
+		java.util.logging.Logger.getLogger("org").setLevel(java.util.logging.Level.OFF);
 		return webClient;
 	}
 	
