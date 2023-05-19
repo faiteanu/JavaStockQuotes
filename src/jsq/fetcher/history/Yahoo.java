@@ -22,15 +22,15 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.ThreadedRefreshHandler;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTable;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.Page;
+import org.htmlunit.SilentCssErrorHandler;
+import org.htmlunit.TextPage;
+import org.htmlunit.ThreadedRefreshHandler;
+import org.htmlunit.UnexpectedPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTable;
 
 public class Yahoo extends BaseFetcher  {
 

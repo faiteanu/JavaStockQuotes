@@ -4,7 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.ProxyConfig;
+import org.htmlunit.ProxyConfig;
 
 import jsq.fetcher.history.BaseFetcher;
 import jsq.fetcher.history.GenericJSFetcher;

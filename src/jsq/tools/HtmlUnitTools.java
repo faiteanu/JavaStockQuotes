@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTable;
-import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTable;
+import org.htmlunit.html.HtmlTableRow;
 
 public class HtmlUnitTools {
 
