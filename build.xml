@@ -14,7 +14,7 @@
 
   <!-- Default property values, if not overridden elsewhere: -->
   <property name='build' location='build' />
-  <property name='app.version' value='0.1.1'/>
+  <property name='app.version' value='0.1.2'/>
   <property name='app.name' value='JavaStockQuotes'/>
   <property name='distro-name' value='java-stock-quotes-${app.version}'/>
   <tstamp><format property='build.time' pattern='yyyy-MM-dd HH:mm:ss'/></tstamp>
