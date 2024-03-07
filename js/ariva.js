@@ -2,6 +2,7 @@
 // Updated 05.10.2022 by @faiteanu
 // Original version by @mikekorb
 // Hotfix 21.03.2023 Karl Heesch
+// Hotfix 07.03.2024 @gnampf1
 
 try {
 	load("nashorn:mozilla_compat.js");
@@ -26,7 +27,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2022-10-05";
+	return "2024-03-07";
 };
 
 function getName() {
@@ -43,8 +44,18 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	y2 = stopyear; m2 = stopmon; d2 = stopday;
 
 	webClient = fetcher.getWebClient(false);
-	url= getURL()
+	url = getURL();
 
+	try {
+		page = webClient.getPage(url + "/user/login/?ref=Lw==");
+		form = page.getHtmlElementById("kc-form-login");
+		form.getInputByName("username").type("MeinUserName"); // Hier Username eintragen
+		form.getInputByName("password").type("MeinPasswort"); // Hier Passwort eintragen
+		page = page.getHtmlElementById("submit").click();
+	} catch (error) {
+		Logger.info("Error on Login: " + error);
+		Logger.info("Page war " + page.asXml());
+	}
 
 	var cfgliste = new ArrayList();
 	
