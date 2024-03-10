@@ -207,6 +207,11 @@ function extractEvents(page, handelsplatz) {
 			continue;
 		}
 
+		// filter events with neither ratio nor amount
+		if ((hashmap.get("Verhältnis") == null || hashmap.get("Verhältnis").trim() == "") && (hashmap.get("Betrag") == null || hashmap.get("Betrag") == "")) {
+			continue;
+		}
+
 		var dc = new Packages.jsq.datastructes.Datacontainer();
 		// Teilweise unterscheiden sich die Termine nach Handelsplätzen
 		if (hashmap.get("Handelsplätze") != null && hashmap.get("Handelsplätze") != "") {
