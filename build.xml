@@ -71,7 +71,7 @@
    </target>
   
    <target name='compile' description='Compile source files and place beside source.'>
-     <javac srcdir="src" debug="true" debuglevel="lines,vars,source">   
+     <javac srcdir="src" debug="true" debuglevel="lines,vars,source" source="1.8" target="1.8">
        <classpath refid='compile.classpath'/>
      </javac>
      <!-- Here's a simple way of debugging a path, fileset, or patternset, using its refid: -->
