@@ -1,14 +1,6 @@
- try {
-        load("nashorn:mozilla_compat.js");
-        var prejava8 = false;
-        var ArrayList = Java.type('java.util.ArrayList');
 
-} catch(e) {
-	// Rhino
-        var prejava8 = true;
-        var ArrayList = java.util.ArrayList;
-};
-importPackage(Packages.jsq.config);
+var ArrayList = java.util.ArrayList;
+
 var fetcher; 
 var wc;
 
