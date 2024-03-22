@@ -4,16 +4,10 @@
 // Hotfix 21.03.2023 Karl Heesch
 // Hotfix 07.03.2024 @gnampf1
 
-try {
-	load("nashorn:mozilla_compat.js");
-	var prejava8 = false;
-	var ArrayList = Java.type('java.util.ArrayList');
-	var Logger = Java.type('de.willuhn.logging.Logger');
-} catch(e) {
-	// Rhino
-	var prejava8 = true;
-	var ArrayList = java.util.ArrayList;
-};
+
+var Logger = Packages.de.willuhn.logging.Logger;
+var ArrayList = java.util.ArrayList;
+
 var fetcher; 
 var webClient;
 var url;

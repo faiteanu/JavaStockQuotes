@@ -25,5 +25,6 @@
 	<classpathentry kind="lib" path="lib/org.htmlunit/htmlunit-core-js-3.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/org.htmlunit/htmlunit-cssparser-3.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/org.htmlunit/neko-htmlunit-3.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/rhino/rhino-1.7.14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
