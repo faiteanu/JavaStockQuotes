@@ -87,7 +87,7 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 		if (options.size() > 0) {
 			var cfg = new Packages.jsq.config.Config("Währung");
 			for (i = 0; i < options.size(); i++) {
-				if (options.get(i).contains("wählen")) {
+				if (options.get(i).includes("wählen")) {
 					continue;
 				}
 				cfg.addAuswahl(options.get(i), new String("waehrung"));

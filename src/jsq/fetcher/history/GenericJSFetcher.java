@@ -46,7 +46,7 @@ public class GenericJSFetcher extends BaseFetcher {
 		Context context = Context.enter();
 		context.setLanguageVersion(Context.VERSION_ES6);
 		context.setOptimizationLevel(-1);
-		context.getWrapFactory().setJavaPrimitiveWrap(true);
+		context.getWrapFactory().setJavaPrimitiveWrap(false);
 		return context;
 	}
 
