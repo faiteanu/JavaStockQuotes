@@ -4,6 +4,8 @@
 // Hotfix 21.03.2023 Karl Heesch
 // Hotfix 07.03.2024 @gnampf1
 
+var ArivaUserName = "MeinUserName";  // Hier Username eintragen
+var ArivaUserPasswort = "MeinPasswort"; // Hier Passwort eintragen
 
 var Logger = Packages.de.willuhn.logging.Logger;
 var ArrayList = java.util.ArrayList;
@@ -21,7 +23,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2024-03-07";
+	return "2024-04-04";
 };
 
 function getName() {
@@ -43,8 +45,8 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	try {
 		page = webClient.getPage(url + "/user/login/?ref=Lw==");
 		form = page.getHtmlElementById("kc-form-login");
-		form.getInputByName("username").type("MeinUserName"); // Hier Username eintragen
-		form.getInputByName("password").type("MeinPasswort"); // Hier Passwort eintragen
+		form.getInputByName("username").type(ArivaUserName);
+		form.getInputByName("password").type(ArivaUserPasswort);
 		page = page.getHtmlElementById("submit").click();
 	} catch (error) {
 		Logger.info("Error on Login: " + error);
