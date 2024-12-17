@@ -1,3 +1,7 @@
+// Script for Hibiscus Depot Viewer
+// Original version by b3nn0
+// Updated 17.12.2024 by dirkhe and faiteanu
+
 var ArrayList = java.util.ArrayList;
 var Logger = Packages.de.willuhn.logging.Logger;
 
@@ -12,7 +16,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2024-02-25";
+	return "2024-12-17";
 };
 
 function getName() {
@@ -31,30 +35,49 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	s = search;
 	y1 = startyear; m1 = startmon; d1 = startday;
 	y2 = stopyear; m2 = stopmon; d2 = stopday;
-    return new ArrayList();
+	
+    var cfgliste = new ArrayList();
+	
+	// Währung
+	var currencies = new Packages.jsq.config.Config("Waehrung");
+	currencies.addAuswahl("EUR", new String("waehrung"));
+	currencies.addAuswahl("USD", new String("waehrung"));
+
+	cfgliste.add(currencies);
+	
+	return cfgliste;
 }
 
 function process(config) {
 	Logger.info("process...");
+	var currency = "EUR";
+	for (i = 0; i < config.size(); i++) {
+			var cfg = config.get(i);
+			for (j = 0; j < cfg.getSelected().size(); j++) {
+				var o = cfg.getSelected().get(j);
+				if (o.getObj().toString().equals("waehrung")) {
+					currency = o.toString(); 
+				}
+			}
+		}
+	
 	var webClient = fetcher.getWebClient(false); 
 
-	var page = webClient.getPage("https://api.portfolio-report.net/securities/search/" + s);
+	var page = webClient.getPage("https://api.portfolio-report.net/v1/securities/search?q=" + s);
 	var json = JSON.parse(page.getWebResponse().getContentAsString());
 	var uuid = json[0]["uuid"];
 
 	var startDate = new Date(y1, m1, d1);
 
 	var start = startDate.toISOString().substring(0, 10);
-	page = webClient.getPage("https://api.portfolio-report.net/securities/uuid/" + uuid + "/markets/XETR?from=" + start);
+	page = webClient.getPage("https://api.portfolio-report.net/securities/uuid/" + uuid + "/prices/" + currency + "?from=" + start);
 	var jsondata = page.getWebResponse().getContentAsString();
 
 	var data = JSON.parse(jsondata);
 
-	var currency = data["currencyCode"];
-
 	var res = new ArrayList();
-	for (var i = 0; i < data["prices"].length; i++) {
-		var price = data["prices"][i];
+	for (var i = 0; i < data.length; i++) {
+		var price = data[i];
 		var dc = new Packages.jsq.datastructes.Datacontainer();
 		dc.put("currency", currency);
 		dc.put("date", Packages.jsq.tools.VarTools.parseDate(price["date"], "yyyy-MM-dd"));
@@ -69,4 +92,3 @@ function process(config) {
 	}
 	fetcher.setHistQuotes(res);
 }
-

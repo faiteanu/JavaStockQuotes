@@ -19,7 +19,7 @@
 
 ## PortfolioReport
 
-- [portfolioreport.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/portfolioreport.js) (zuletzt geändert 04.04.2024)
+- [portfolioreport.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/portfolioreport.js) (zuletzt geändert 17.12.2024)
   herunterladen und unter Windows speichern unter  
   `C:\Users\{USERNAME}\.jameica\hibiscus.depotviewer\js`  
   Unter Linux das entsprechende Benutzer-Verzeichnis wählen.
