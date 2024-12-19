@@ -3,6 +3,7 @@
 // Original version by @mikekorb
 // Hotfix 21.03.2023 Karl Heesch
 // Hotfix 07.03.2024 @gnampf1
+// Hotfix 19.12.2024 by @faiteanu
 
 var ArivaUserName = "MeinUserName";  // Hier Username eintragen
 var ArivaUserPasswort = "MeinPasswort"; // Hier Passwort eintragen
@@ -67,7 +68,7 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 			kursUrl = url + "/quote/historic.m?" + link[1].substring(link[1].indexOf("secu="));		
 		}else{
 			url += link[1];
-			kursUrl = url + "/historische_kurse";			
+			kursUrl = url + "/kurse/historische-kurse";			
 		}
       	print(kursUrl);
 		page = webClient.getPage(kursUrl);

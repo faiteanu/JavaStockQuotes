@@ -4,7 +4,7 @@
 
 - Unter https://ariva.de einen neuen Benutzer-Account registrieren. Kurse sind nicht mehr ohne Registrierung abrufbar.
 
-- [ariva.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/ariva.js) (zuletzt geändert 04.04.2024)
+- [ariva.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/ariva.js) (zuletzt geändert 19.12.2024)
   herunterladen und unter Windows speichern unter  
   `C:\Users\{USERNAME}\.jameica\hibiscus.depotviewer\js`  
   Unter Linux das entsprechende Benutzer-Verzeichnis wählen.
