@@ -17,9 +17,18 @@
   ```
 - Jameica neu starten
 
+## Finanzen.net
+
+- [finanzennet.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/finanzennet.js) (zuletzt geändert 18.01.2025)
+  herunterladen und unter Windows speichern unter  
+  `C:\Users\{USERNAME}\.jameica\hibiscus.depotviewer\js`  
+  Unter Linux das entsprechende Benutzer-Verzeichnis wählen.
+
+- Jameica neu starten
+
 ## PortfolioReport
 
-- [portfolioreport.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/portfolioreport.js) (zuletzt geändert 17.12.2024)
+- [portfolioreport.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/portfolioreport.js) (zuletzt geändert 18.01.2025)
   herunterladen und unter Windows speichern unter  
   `C:\Users\{USERNAME}\.jameica\hibiscus.depotviewer\js`  
   Unter Linux das entsprechende Benutzer-Verzeichnis wählen.

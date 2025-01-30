@@ -1,11 +1,12 @@
 // Script for Hibiscus Depot Viewer
 // Original version by b3nn0
 // Updated 17.12.2024 by dirkhe and faiteanu
+// Updated 18.01.2025 by dirkhe
 
 var ArrayList = java.util.ArrayList;
 var Logger = Packages.de.willuhn.logging.Logger;
 
-var fetcher; 
+var fetcher;
 var webClient;
 
 
@@ -16,7 +17,7 @@ function getAPIVersion() {
 };
 
 function getVersion() {
-	return "2024-12-17";
+	return "2025-01-18";
 };
 
 function getName() {
@@ -35,16 +36,16 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	s = search;
 	y1 = startyear; m1 = startmon; d1 = startday;
 	y2 = stopyear; m2 = stopmon; d2 = stopday;
-	
+
     var cfgliste = new ArrayList();
-	
+
 	// Währung
 	var currencies = new Packages.jsq.config.Config("Waehrung");
 	currencies.addAuswahl("EUR", new String("waehrung"));
 	currencies.addAuswahl("USD", new String("waehrung"));
 
 	cfgliste.add(currencies);
-	
+
 	return cfgliste;
 }
 
@@ -55,13 +56,13 @@ function process(config) {
 			var cfg = config.get(i);
 			for (j = 0; j < cfg.getSelected().size(); j++) {
 				var o = cfg.getSelected().get(j);
-				if (o.getObj().toString().equals("waehrung")) {
-					currency = o.toString(); 
-				}
+				if (cfg.getBeschreibung().equals("waehrung")) {
+          			currency = o.toString();
+        		}
 			}
 		}
-	
-	var webClient = fetcher.getWebClient(false); 
+
+	var webClient = fetcher.getWebClient(false);
 
 	var page = webClient.getPage("https://api.portfolio-report.net/v1/securities/search?q=" + s);
 	var json = JSON.parse(page.getWebResponse().getContentAsString());
@@ -82,7 +83,7 @@ function process(config) {
 		dc.put("currency", currency);
 		dc.put("date", Packages.jsq.tools.VarTools.parseDate(price["date"], "yyyy-MM-dd"));
 		dc.put("last", Packages.jsq.tools.VarTools.stringToBigDecimal(price["close"]));
-		
+
 		//dc.put("first", Packages.jsq.tools.VarTools.stringToBigDecimal(record.get("Open")));
 		//dc.put("last", Packages.jsq.tools.VarTools.stringToBigDecimal(price["close"]));
 		//dc.put("low", Packages.jsq.tools.VarTools.stringToBigDecimal(record.get("Low")));
