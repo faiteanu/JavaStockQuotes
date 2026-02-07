@@ -2,6 +2,9 @@
 // Updated 03.01.2025 by @dirkhe
 // Updated 18.01.2025 by @dirkhe - Logging added
 
+/** start date for historic rates when no min date is set on the input */
+const DEFAULT_START_DATE = '2020-01-01';
+
 var ArrayList = java.util.ArrayList;
 
 var fetcher;
@@ -59,7 +62,11 @@ function prepare(
     searchButton = page.getElementById("request-historic-price");
 
     input = page.getElementById("fromDate");
-    input.setValue(input.getMin());
+    if (input.getMin()) {
+      input.setValue(input.getMin());
+    } else {
+      input.setValue(DEFAULT_START_DATE);
+    }
 
     input = page.getElementById("toDate");
     input.setValue(input.getMax());
@@ -68,24 +75,45 @@ function prepare(
       Packages.de.willuhn.logging.Logger.debug("suche Link historische Kurse");
       links = page.getAnchorByText("Historische Kurse");
       page = links.click();
-    } catch (error) {      
-      Packages.de.willuhn.logging.Logger.debug("suche Link Kurse & Realtime");
-      links = page.getAnchorByText("Kurse & Realtime");
-      page = links.click();
-      Packages.de.willuhn.logging.Logger.debug("suche Link historische Kurse");
-      links = page.getAnchorByText("Historische Kurse");
-      page = links.click();
+    } catch (error) {
+      try {
+        Packages.de.willuhn.logging.Logger.debug("suche Link Kurse & Realtime");
+        links = page.getAnchorByText("Kurse & Realtime");
+        page = links.click();
+        Packages.de.willuhn.logging.Logger.debug("suche Link historische Kurse");
+        links = page.getAnchorByText("Historische Kurse");
+        page = links.click();
+      } catch (error2) {
+        // navigate to historic rates for "Zertifikate"
+        Packages.de.willuhn.logging.Logger.debug("suche Link Historisch");
+        links = page.getAnchorByText("Historisch");
+        page = links.click();
+      }
     }
-    Packages.de.willuhn.logging.Logger.debug("suche Select strBoerse");
-    boerseSelect = page.getElementByName("strBoerse");
-    Packages.de.willuhn.logging.Logger.debug("suche search-Button");
-    searchButton = boerseSelect.getFirstByXPath("../../div/button");
+    try {
+      Packages.de.willuhn.logging.Logger.debug("suche Select strBoerse");
+      boerseSelect = page.getElementByName("strBoerse");
+      Packages.de.willuhn.logging.Logger.debug("suche search-Button");
+      searchButton = boerseSelect.getFirstByXPath("../../div/button");
 
-    input = page.getElementByName("dtDate1");
-    input.setValue(input.getMin());
+      input = page.getElementByName("dtDate1");
+      input.setValue(input.getMin());
 
-    input = page.getElementByName("dtDate2");
-    input.setValue(input.getMax());
+      input = page.getElementByName("dtDate2");
+      input.setValue(input.getMax());
+    } catch (error) {
+      // retrieve historic rates for "Zertifikate"
+      Packages.de.willuhn.logging.Logger.debug("suche Select historic-prices-stock-market");
+      boerseSelect = page.getElementById("historic-prices-stock-market");
+      Packages.de.willuhn.logging.Logger.debug("suche search-Button");
+      searchButton = page.getElementById("request-historic-price");
+
+      input = page.getElementById("derivative-historical-start-date");
+      input.setValue(DEFAULT_START_DATE);
+
+      input = page.getElementById("derivative-historical-end-date");
+      input.setValue(input.getMax());
+    }
   }
 
   var liste = new ArrayList();
@@ -93,14 +121,14 @@ function prepare(
     Packages.de.willuhn.logging.Logger.error("Konnte Kurse Link nicht finden");
   } else {
     // Handelsplätze extrahieren
-    
+
     var cfg = new Packages.jsq.config.Config("Handelsplatz");
     var listeHandelsplaetze = boerseSelect.getOptions(); // List of HtmlOption
     for (var i = 0; i < listeHandelsplaetze.size(); i++) {
       var platz = listeHandelsplaetze.get(i);
       cfg.addAuswahl(platz.getText(), platz.getValueAttribute());
     }
-    liste.add(cfg);   
+    liste.add(cfg);
   }
 
 
@@ -138,8 +166,6 @@ function process(config) {
   } else {
     list = Packages.jsq.tools.HtmlUnitTools.analyse(tab);
     Packages.de.willuhn.logging.Logger.info(list.size() + " Kurse gefunden");
-
-    
     for (i = 0; i < list.size(); i++) {
       try {
         hashmap = list.get(i);
