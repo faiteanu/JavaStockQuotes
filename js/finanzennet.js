@@ -7,6 +7,7 @@
 const DEFAULT_START_DATE = '2020-01-01';
 
 var ArrayList = java.util.ArrayList;
+let logger = Packages.de.willuhn.logging.Logger;
 
 var fetcher;
 var wc;
@@ -19,15 +20,15 @@ function getAPIVersion() {
 }
 
 function getVersion() {
-  return "2025-01-18";
-}
-
-function getDate(year, month, day) {
-  return new java.util.Date(year - 1900, month - 1, day);
+  return "2026-03-18";
 }
 
 function getURL() {
   return "http://www.finanzen.net";
+}
+
+function getAktienSucheUrl(search) {
+  return "http://www.finanzen.net/suchergebnis.asp?frmAktiensucheTextfeld=" + search;
 }
 
 function getName() {
@@ -48,18 +49,17 @@ function prepare(
 
   wc = fetcher.getWebClient(true);
   wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-  Packages.de.willuhn.logging.Logger.debug("load  http://www.finanzen.net/suchergebnis.asp?frmAktiensucheTextfeld=" + search);
-  page = wc.getPage(
-    "http://www.finanzen.net/suchergebnis.asp?frmAktiensucheTextfeld=" + search
-  );
+  const url = getAktienSucheUrl(search);
+  logger.debug("load " + url);
+  page = wc.getPage(url);
 
   try {
-    Packages.de.willuhn.logging.Logger.debug("suche Link Kurse");
+    logger.debug("suche Link Kurse");
     links = page.getAnchorByText("Kurse");
     page = links.click();
-    Packages.de.willuhn.logging.Logger.debug("suche Select historic-prices-stock-market");
+    logger.debug("suche Select historic-prices-stock-market");
     boerseSelect = page.getElementById("historic-prices-stock-market");
-    Packages.de.willuhn.logging.Logger.debug("suche Button request-historic-price");
+    logger.debug("suche Button request-historic-price");
     searchButton = page.getElementById("request-historic-price");
 
     input = page.getElementById("fromDate");
@@ -72,41 +72,59 @@ function prepare(
     input = page.getElementById("toDate");
     input.setValue(input.getMax());
   } catch (e) {
+    logger.debug("versuche Alternative aufgrund " + e);
     try {
-      Packages.de.willuhn.logging.Logger.debug("suche Link historische Kurse");
+      logger.debug("suche Link historische Kurse");
       links = page.getAnchorByText("Historische Kurse");
       page = links.click();
     } catch (error) {
+      logger.debug("versuche Alternative aufgrund " + error);
       try {
-        Packages.de.willuhn.logging.Logger.debug("suche Link Kurse & Realtime");
+        logger.debug("suche Link Kurse & Realtime");
         links = page.getAnchorByText("Kurse & Realtime");
         page = links.click();
-        Packages.de.willuhn.logging.Logger.debug("suche Link historische Kurse");
+        logger.debug("suche Link historische Kurse");
         links = page.getAnchorByText("Historische Kurse");
         page = links.click();
       } catch (error2) {
+        logger.debug("versuche Alternative aufgrund " + error2);
         // navigate to historic rates for "Zertifikate"
-        Packages.de.willuhn.logging.Logger.debug("suche Link Historisch");
+        logger.debug("suche Link Historisch");
         links = page.getAnchorByText("Historisch");
         page = links.click();
       }
     }
     try {
-      Packages.de.willuhn.logging.Logger.debug("suche Select strBoerse");
-      boerseSelect = page.getElementByName("strBoerse");
-      Packages.de.willuhn.logging.Logger.debug("suche search-Button");
+      try {
+        logger.debug("suche Select strBoerse");
+        boerseSelect = page.getElementByName("strBoerse");
+
+        input = page.getElementByName("dtDate1");
+        input.setValue(input.getMin());
+
+        input = page.getElementByName("dtDate2");
+        input.setValue(input.getMax());
+      }
+      catch (error2) {
+        logger.debug("versuche Alternative aufgrund " + error2);
+        logger.debug("suche Select exchange");
+        boerseSelect = page.getElementByName("exchange");
+
+        input = page.getElementByName("date-from");
+        input.setValue(input.getMin());
+
+        input = page.getElementByName("date-to");
+        input.setValue(input.getMax());
+      }
+
+      logger.debug("suche search-Button");
       searchButton = boerseSelect.getFirstByXPath("../../div/button");
-
-      input = page.getElementByName("dtDate1");
-      input.setValue(input.getMin());
-
-      input = page.getElementByName("dtDate2");
-      input.setValue(input.getMax());
     } catch (error) {
+      logger.debug("versuche Alternative aufgrund " + error);
       // retrieve historic rates for "Zertifikate"
-      Packages.de.willuhn.logging.Logger.debug("suche Select historic-prices-stock-market");
+      logger.debug("suche Select historic-prices-stock-market");
       boerseSelect = page.getElementById("historic-prices-stock-market");
-      Packages.de.willuhn.logging.Logger.debug("suche search-Button");
+      logger.debug("suche search-Button");
       searchButton = page.getElementById("request-historic-price");
 
       input = page.getElementById("derivative-historical-start-date");
@@ -119,7 +137,7 @@ function prepare(
 
   var liste = new ArrayList();
   if (!page) {
-    Packages.de.willuhn.logging.Logger.error("Konnte Kurse Link nicht finden");
+    logger.error("Konnte Kurse Link nicht finden");
   } else {
     // Handelsplätze extrahieren
 
@@ -132,7 +150,7 @@ function prepare(
     liste.add(cfg);
   }
 
-
+  logger.debug("extrahierte Handelsplätze: " + liste);
   return liste;
 }
 
@@ -153,20 +171,21 @@ function process(config) {
   }
 
   if (!boerseSelect) {
-    Packages.de.willuhn.logging.Logger.error("Börsenauswahl nicht gefunden");
+    logger.error("Börsenauswahl nicht gefunden");
   } else {
     option = boerseSelect.getOptionByValue(boerse);
     boerseSelect.setSelectedAttribute(option, true);
   }
 
+  logger.debug("frage Kurse ab...")
   page = searchButton.click();
   wc.waitForBackgroundJavaScript(10000);
   tab = Packages.jsq.tools.HtmlUnitTools.getTableByPartContent(page, "Datum");
   if (!tab) {
-    Packages.de.willuhn.logging.Logger.error("Börsenauswahl nicht gefunden");
+    logger.error("Börsenauswahl nicht gefunden");
   } else {
     list = Packages.jsq.tools.HtmlUnitTools.analyse(tab);
-    Packages.de.willuhn.logging.Logger.info(list.size() + " Kurse gefunden");
+    logger.info(list.size() + " Kurse gefunden");
     for (i = 0; i < list.size(); i++) {
       try {
         hashmap = list.get(i);
@@ -208,7 +227,7 @@ function process(config) {
         dc.put("currency", currency);
         res.add(dc);
       } catch (error) {
-        Packages.de.willuhn.logging.Logger.error("Fehler beim Kurse auslesen: " + error + "\n" + hashmap);
+        logger.error("Fehler beim Kurse auslesen: " + error + "\n" + hashmap);
       }
     }
   }
@@ -219,7 +238,5 @@ function search(fetch, search) {
   fetcher = fetch;
 
   wc = fetcher.getWebClient(true);
-  page = wc.getPage(
-    "http://www.finanzen.net/suchergebnis.asp?frmAktiensucheTextfeld=" + search
-  );
+  page = wc.getPage(getAktienSucheUrl(search));
 }

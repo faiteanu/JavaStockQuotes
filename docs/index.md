@@ -19,7 +19,7 @@
 
 ## Finanzen.net
 
-- [finanzennet.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/finanzennet.js) (zuletzt geändert 07.02.2026)
+- [finanzennet.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/finanzennet.js) (zuletzt geändert 18.03.2026)
   herunterladen und unter Windows speichern unter  
   `C:\Users\{USERNAME}\.jameica\hibiscus.depotviewer\js`  
   Unter Linux das entsprechende Benutzer-Verzeichnis wählen.
