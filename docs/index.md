@@ -26,6 +26,15 @@
 
 - Jameica neu starten
 
+## ing.de
+
+- [ing.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/ing.js) (zuletzt geändert 21.03.2026)
+  herunterladen und unter Windows speichern unter  
+  `C:\Users\{USERNAME}\.jameica\hibiscus.depotviewer\js`  
+  Unter Linux das entsprechende Benutzer-Verzeichnis wählen.
+
+- Jameica neu starten
+
 ## PortfolioReport
 
 - [portfolioreport.js](https://raw.githubusercontent.com/faiteanu/JavaStockQuotes/master/js/portfolioreport.js) (zuletzt geändert 18.01.2025)

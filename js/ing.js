@@ -7,14 +7,15 @@ var JDate = java.util.Date;
 var BigDecimal = java.math.BigDecimal;
 
 var fetcher;
-var s;
+var isin;
+var exchangeCodeMap = {}
 
 function getAPIVersion() {
     return "1";
 };
 
 function getVersion() {
-    return "2025-01-31";
+    return "2026-03-21";
 };
 
 function getName() {
@@ -28,90 +29,151 @@ function getURL() {
 function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon, stopday) {
     Logger.info("Configuring...");
     fetcher = fetch;
-    s = search;
+    isin = search;
 
-    var cfgliste = new ArrayList();
+    const webClient = fetcher.getWebClient(false);
+    webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+    try {
+        Logger.debug("Requesting time ranges");
+        //const pageTimeRanges = webClient.getPage("https://component-api.wertpapiere.ing.de/api/v1/components-ng/chart?isins=" + isin);
+        const pageTimeRanges = webClient.getPage("https://component-api.wertpapiere.ing.de/api/v1/components/charttool/" + isin);
+        const responseTimeRanges = JSON.parse(pageTimeRanges.getWebResponse().getContentAsString());
+
+        Logger.debug("Requesting exchanges and currency");
+        const pageExchanges = webClient.getPage("https://component-api.wertpapiere.ing.de/api/v1/instrument-header?isinOrSearchTerm=" + isin + "&isKnownIsin=true&includeAvailableExchanges=true");
+        const responseExchanges = JSON.parse(pageExchanges.getWebResponse().getContentAsString());
+    }
+    catch(error) {
+        Logger.error("ISIN " + isin + " nicht gefunden bei " + getName());
+    }
 
     // Zeitraum
-    var timeRange = new Packages.jsq.config.Config("Zeitraum");
-    timeRange.addAuswahl("Eine Woche", new String("OneWeek"));
-    timeRange.addAuswahl("Ein Monat", new String("OneMonth"));
-    timeRange.addAuswahl("Ein Jahr", new String("OneYear"));
-    timeRange.addAuswahl("Fuenf Jahre", new String("FiveYears"));
-    timeRange.addAuswahl("Maximum", new String("Maximum"));
+    var historyConfig = new Packages.jsq.config.Config("Historie");
+    const periods = responseTimeRanges["chartPeriodTranslations"];
+    periods.forEach(period => {
+        if (period["chartPeriod"] != "Intraday") {
+            historyConfig.addAuswahl(period["translation"], period["chartPeriod"]);
+        }
+    });
+
+    // Kursdetails: Hoch,Tief, Eröffnung
+    var ohlcConfig = new Packages.jsq.config.Config("Kursdetails");
+    ohlcConfig.addAuswahl("Keine", new Boolean(false));
+    ohlcConfig.addAuswahl("Hoch-/Tief-/Eröffnungskurse", new Boolean(true));
 
     // Handelsplatz
-    var exchange = new Packages.jsq.config.Config("Handelsplatz");
-    exchange.addAuswahl("Direkthandel", new String("2779"));
-    exchange.addAuswahl("Xetra", new String("44"));
-    exchange.addAuswahl("Frankfurt", new String("13"));
-    exchange.addAuswahl("Duesseldorf", new String("14"));
-    exchange.addAuswahl("Muenchen", new String("15"));
-    exchange.addAuswahl("Stuttgart", new String("16"));
-    exchange.addAuswahl("Hamburt", new String("17"));
-    exchange.addAuswahl("Berlin", new String("18"));
-    exchange.addAuswahl("Hannover", new String("19"));
-    exchange.addAuswahl("USA (Nasdaq)", new String("537"));
+    const exchanges = responseExchanges["exchanges"];
+    Logger.debug("Found " + exchanges.length + " exchanges");
 
-    cfgliste.add(timeRange);
-    cfgliste.add(exchange);
+    var exchangeConfig = new Packages.jsq.config.Config("Handelsplatz");
+    exchanges.forEach(exchange => {
+        exchangeConfig.addAuswahl(exchange["exchangeName"], exchange["exchangeCode"]);
+        Logger.debug("currency " + exchange["currencySymbol"] + " found at " + exchange["exchangeCode"] + " (" + exchange["exchangeName"] + ")");
+        // remember infos of exchange for process()
+        exchangeCodeMap[exchange["exchangeCode"]] = exchange;
+    });
+
+    var cfgliste = new ArrayList();
+    cfgliste.add(historyConfig);
+    cfgliste.add(ohlcConfig);
+    cfgliste.add(exchangeConfig);
 
     return cfgliste;
 }
 
 function process(config) {
-    var timeRange = "OneYear";
-    var exchange = "2779" // Direkthandel
+    // default config
+    var history = "OneMonth";
+    var ohlc = "";
+    var exchange = {
+        "exchangeCode": "TGT",
+        "exchangeName": "Direkthandel",
+        "exchangeId": 2779,
+        "currencySymbol": "EUR",
+        "currencyId": 814
+    };
+    // read from saved config
     for (i = 0; i < config.size(); i++) {
         var cfg = config.get(i);
         Logger.info(cfg.toString());
         for (j = 0; j < cfg.getSelected().size(); j++) {
             var o = cfg.getSelected().get(j);
-            if (cfg.getBeschreibung().equals("Zeitraum")) {
-                timeRange = o.getObj();
+            if (cfg.getBeschreibung().equals("Historie")) {
+                history = o.getObj();
             } else if (cfg.getBeschreibung().equals("Handelsplatz")) {
-                exchange = o.getObj();
+                const exchangeCode = o.getObj();
+                if (exchangeCode in exchangeCodeMap) {
+                    exchange = exchangeCodeMap[exchangeCode];
+                    Logger.debug("currency at exchange " + exchangeCode + " is " + exchange["currencySymbol"]);
+                }
+            } else if (cfg.getBeschreibung().equals("Kursdetails")) {
+                ohlc = o.getObj().valueOf() ? "&ohlc=true" : "";
             }
         }
     }
 
-    var webClient = fetcher.getWebClient(false);
-
-    Logger.info("Fetching metadata for " + s);
-
-    // Fetch ID
-    var page = webClient.getPage("https://component-api.wertpapiere.ing.de/api/v1/components/instrumentheader/" + s);
-    var metadata = JSON.parse(page.getWebResponse().getContentAsString());
-    var id = metadata["id"];
-
-    Logger.info("Stock " + s + " has ID " + id + ", fetching prices...");
 
     // Fetch data
-    page = webClient.getPage("https://component-api.wertpapiere.ing.de/api/v1/charts/shm/" + id + "?timeRange=" + timeRange + "&exchangeId=" + exchange + "&currencyId=814");
-    var response = JSON.parse(page.getWebResponse().getContentAsString());
-    var data = response["instruments"][0]["data"];
+    var res = new ArrayList();
+
+    Logger.info("Fetching history " + history + " of " + isin + " at " + exchange["exchangeCode"]);
+    const webClient = fetcher.getWebClient(false);
+    //const url = "https://component-api.wertpapiere.ing.de/api/v1/charts/shm/" + isin + "?timeRange="+ history + "&exchangeId=" + exchangeId + "&currencyId=" + currencyId;
+    const url = "https://component-api.wertpapiere.ing.de/api/v1/charts/charttooldata/" + isin + "?timeRange=" + history + "&exchangeId=" + exchange["exchangeId"] + "&exchangeCode=" + exchange["exchangeCode"] + "&currencyId=" + exchange["currencyId"] + ohlc;
+    Logger.debug("request " + url)
+    const page = webClient.getPage(url);
+    const response = JSON.parse(page.getWebResponse().getContentAsString());
+    const data = response["instruments"][0]["data"];
+    const keys = response["instruments"][0]["keys"]; // meaning of elements in data ordered in the same way 
+    const keyMapping = {"x": "date",
+                        "y": "last",
+                        "open": "first",
+                        "high": "high",
+                        "low": "low",
+                        "close": "last"
+    }; // translate keys to internal id in Datacontainer
+    const noMapping = "nomapping"
 
     Logger.info("Fetched " + data.length + " results.");
 
-    if (data.length === 0) {
-        fetcher.setHistQuotes(new ArrayList());
-        return;
+    Logger.debug("keys=" + keys);
+    let oldDate = new JDate();
+    data.forEach(row => {
+        // transform each row to a dict to match values with keys
+        item = Object.fromEntries(
+            keys.map((key, i) => [(key in keyMapping ? keyMapping[key] : noMapping), row[i]])
+        );
+        Logger.trace("item=" + JSON.stringify(item));
+        // no need to consider response["instruments"][0]["currentTimezoneOffset"], since quotes are given in UTC
+        const date = new JDate(item["date"]);
+
+        // Ensure there's only one result per day; assume historyItems are sorted by date
+        if (res.isEmpty() || (date.getDate() != oldDate.getDate())) {
+            var dc = new Packages.jsq.datastructes.Datacontainer();
+            Object.entries(item).forEach(([mappedKey, value]) => {
+                if (!["date", noMapping].includes(mappedKey)) {
+                    // add only values, where key could be mapped and is not date
+                    dc.put(mappedKey, new BigDecimal(value));
+                }
+            });
+
+            // if we found any value for mapable keys, we add the dc
+            if (!dc.getMap().isEmpty()) {
+                dc.put("currency", exchange["currencySymbol"]);
+                dc.put("date", date);
+                res.add(dc);
+            }
+        }
+        oldDate = date;
+    });
+
+    if (res.length > 0) {
+        Logger.info("Received " + res.length + " historic quotes.");
+    }
+    else {
+        Logger.error("No historic quotes found. " + (data.length > 0 ? "Maybe key mapping has changed." : ""));
     }
 
-    var res = new ArrayList();
-    for (var i = 1; i < data.length; i++) {
-        var dataPoint = data[i - 1];
-        var date = new JDate(dataPoint[0]);
-        var price = new BigDecimal(dataPoint[1]);
-        var newDate = new JDate(data[i][0]);
-        // Ensure there's only one result per day
-        if (date.getDay() != newDate.getDay()) {
-            var dc = new Packages.jsq.datastructes.Datacontainer();
-            dc.put("currency", "EUR");
-            dc.put("date", date);
-            dc.put("last", price);
-            res.add(dc);
-        }
-    }
     fetcher.setHistQuotes(res);
 }
