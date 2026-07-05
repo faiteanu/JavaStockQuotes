@@ -32,7 +32,7 @@ function getName() {
 };
 
 function getURL() {
-	return "http://www.ariva.de";
+	return "https://www.ariva.de";
 };
 
 function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon, stopday) {
@@ -44,7 +44,7 @@ function prepare(fetch, search, startyear, startmon, startday, stopyear, stopmon
 	url = getURL();
 
 	try {
-		page = webClient.getPage(url + "/user/login/?ref=Lw==");
+		page = webClient.getPage("https://login.ariva.de/realms/ariva/protocol/openid-connect/auth?client_id=ariva-web&scope=openid+profile+email&response_type=code&redirect_uri=https%3A%2F%2Fwww.ariva.de%2F");
 		form = page.getHtmlElementById("kc-form-login");
 		form.getInputByName("username").type(ArivaUserName);
 		form.getInputByName("password").type(ArivaUserPasswort);
@@ -159,6 +159,10 @@ function process(config) {
 			+ "&boerse_id=" + boerse_id + "&clean_split=0&clean_payout=0&clean_bezug=0&currency=" + currency_id + "&min_time=" + d1 + "." + m1 + "." + y1 
 			+"&max_time=" + d2 + "." + m2 + "." + y2 + "&trenner=%3B&go=Download";
     	print(histUrl);
+		// Fix for failed download
+		var req = new org.htmlunit.WebRequest(new java.net.URL(histUrl));
+		webClient.getPage(req);
+
 		text = webClient.getPage(histUrl);
     	defaultcur = Packages.jsq.tools.CurrencyTools.correctCurrency(defaultcur);
 		evalCSV(text.getContent(), defaultcur);
